@@ -1,0 +1,113 @@
+# 프로젝트 생성
+
+<aside>
+💡 tool : intelliJ
+prodect : Gradle
+Language : Java 11
+Spring Boot : 2.3.1
+
+</aside>
+
+- 스프링 프로젝트 생성기
+    
+    [Spring Initializr](https://start.spring.io/)
+    
+- Project Metadata
+    - Group : hello
+    - Artifact : hello-spring
+    - Name : hello-spring
+    - Desciption : Demo project for Spring Boot
+    - Package name : hello.hello-spring
+
+- bulid.gradle(스프링, 자바 버전 등 프로젝트 설정)
+    
+    ```xml
+    plugins { //버전정보
+    	id 'org.springframework.boot' version '2.3.1.RELEASE'
+    	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    	id 'java'
+    }
+    group = 'hello'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = '11'//자바버전
+    
+    repositories {
+    	mavenCentral()//기본 라이브러리 다운로드 경로
+    }
+    dependencies {//기본 라이브러리
+    	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    	implementation 'org.springframework.boot:spring-boot-starter-web'
+    	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+    		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    	}
+    }
+    test {
+    	useJUnitPlatform()
+    }
+    ```
+    
+    에러 발생시 프로젝트 닫고 build.gradle로 다시 키기
+    
+- .gitignore(git에 필요한 코드만 올라가도록 제한)
+- gradlew, gradlew.bat(나중에)
+- setting.gradle(별로중요하지않음)
+- `HelloSpringApplication`
+    
+    ```java
+    package hello.hellospring;
+    
+    import org.springframework.boot.SpringApplication;
+    import org.springframework.boot.autoconfigure.SpringBootApplication;
+    
+    @SpringBootApplication
+    public class HelloSpringApplication {
+    
+    	public static void main(String[] args) {
+    		SpringApplication.run(HelloSpringApplication.class, args);
+    		//SpringApplication 내부에 tomcat이 내장되어있음
+    	}
+    
+    }
+    ```
+    
+- preferences - build - build tools - gradle > run using 두가지 intelliJ로 변경 (gradle을 안들려서 속도가 더 빠름)
+- 문제분석
+    1. 버전이 다름(`'2.7.6'` —> `'2.3.1.RELEASE'` 변경 했는데 이게 원인일수도(되돌리고 새로 빌드해도 그대로)
+        
+        `id 'org.springframework.boot' version '2.3.1.RELEASE'//'2.7.6'//id 'io.spring.dependency-management' version '1.0.9.RELEASE'//'1.0.15.RELEASE'//`
+        
+    2. build→ Java Complier 설정
+        
+        Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+        
+        You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+        
+        [[Gradle] Deprecated Gradle features were used in this build..](https://sunghs.tistory.com/118)
+        
+        해줬지만 소용없음
+        
+    3. 빌드 툴 인텔리제이로 변경
+        
+        [[Intellij] 자바 프로젝트 빌드 시 Deprecated Gradle features were used in this build, making it incompatible with Gradle 7.0. 에러 해결](https://onlyfor-me-blog.tistory.com/248)
+        
+        새로 빌드 실행시 실행 조차 안됨
+        
+    4. profiles 설정(이해필요)
+        
+        [IntelliJ (Ultimate & Community) 에서 스프링부트 active profile 설정하기](https://jojoldu.tistory.com/547)
+        
+    - 혹시 모를 초기 세팅
+        
+        ![Untitled](%E1%84%91%E1%85%B3%E1%84%85%E1%85%A9%E1%84%8C%E1%85%A6%E1%86%A8%E1%84%90%E1%85%B3%20%E1%84%89%E1%85%A2%E1%86%BC%E1%84%89%E1%85%A5%E1%86%BC%20fa133d88cb4a4cb3bb59a3482adb2b7c/Untitled.png)
+        
+    - 오류 해결 방법
+        
+        [Error:java: invalid flag: -release](https://stackoverflow.com/questions/40448344/errorjava-invalid-flag-release)
+        
+        [[IntelliJ] 프로젝트 빌드 시 "java: warning: source release 11 requires target release 11" 에러 해결](https://bada744.tistory.com/66)
+        
+        [[Spring] Intellij 실행시 finished with non-zero exit value 1 오류](https://velog.io/@developerjun0615/Spring-Intellij-%EC%8B%A4%ED%96%89%EC%8B%9C-finished-with-non-zero-exit-value-1-%EC%98%A4%EB%A5%98)
+        
+        [Intellij - error: invalid source release: 17 오류](https://binux.tistory.com/92)
+        
+        [[Intellij / 인텔리제이] 프로젝트 버전 안맞는 현상 ( Execution failed for task ':compileJava'. )](https://milenote.tistory.com/63)
