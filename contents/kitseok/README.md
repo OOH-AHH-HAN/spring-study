@@ -28,7 +28,8 @@
               - Package name : hello.hello-spring
 
           - bulid.gradle(스프링, 자바 버전 등 프로젝트 설정)
-
+                
+              ~~~
               ```xml
               plugins { //버전정보
                 id 'org.springframework.boot' version '2.3.1.RELEASE'
@@ -77,6 +78,7 @@
 
               }
               ```
+             ~~~
 
           - preferences - build - build tools - gradle > run using 두가지 intelliJ로 변경 (gradle을 안들려서 속도가 더 빠름)
           - 문제분석
