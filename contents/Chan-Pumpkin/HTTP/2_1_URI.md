@@ -13,8 +13,7 @@ URI는 가장 큰 개념
 URL : 리소스의 위치
 
 URN : 리소스의 이름 (리소스의 이름을 대면 위치를 찾아갈 수 있다.)
-![Untitled 3](https://user-images.githubusercontent.com/62877858/209468480-31c467a5-c10d-4f8c-b7f4-705558d83071.png)
-
+![Untitled 2](https://user-images.githubusercontent.com/62877858/209468555-9557982f-7fba-409a-9c3e-496ed82c7777.png)
 
 문제는 이름을 부여하면 찾을 수가 없음 리소스가 매핑이 되어 있어야하는데 사실상 어렵다.
 
