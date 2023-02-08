@@ -455,3 +455,300 @@ ex) jsp, 타임리프
 - JAVA 코드, 데이터 조회하는 리포지터리 등등 다양한 코드가 노출됨
 - JSP가 너무 많은 역할을 함.
 - JSP 코드가 심각하게 길어질 수도 있음.
+
+# 4. MVC 패턴
+
+## 하나에서 비즈니스로직, 뷰를 처리하면 안좋은 점이 있다.
+
+### 하나에 너무 많은 역할
+
+- 여러 줄의 코드가 있어서 찾기 어려움.
+- UI를 변경해야하면 비즈니스 로직까지 손을 대야함.
+
+### 변경의 라이프 사이클
+
+- UI 일부 수정하는 일과 비즈니스 로직을 수정하는 일은 각각 변경의 라이프 사이클이 다르다.
+- 변경 주기가 다를 때, 분리 해야함.
+
+### 기능 특화
+
+- JSP 같은 뷰 템플릿은 화면 렌더링 하는데 최정화 되어 있기에 이 부분만 업무만 담당하는 것이 가장 효과적
+
+## Model View Controller
+
+### 컨트롤러
+
+HTTP 요청 받아서 파라미터 검증하고, 비즈니스 로직을 수행해서 데이터를 모델에 담아서 뷰에 전달함.
+
+### 모델
+
+뷰가 필요한 데이터를 모두 모델에 담아서 전달해준다. 덕분에 뷰는 비즈니스 로직이나 데이터 접근을 신경 안쓰고 화면 렌더링에 집중 할 수 있음.
+
+### 뷰
+
+뷰는 모델에 있는 것을 참고해서 그린다.
+
+## 순서
+
+1) 클라이언트 요청
+
+2) 컨트롤러 로직-서비스 호출
+
+3) 서비스-비즈니스 로직-리포지터리 호출
+
+4) 리포지터리-데이터 접근
+
+5) 서비스-비즈니스 로직처리
+
+6) 컨트롤러 데이터 모델이 담기
+
+7) 모델에 담긴 데이터를 받아서 화면 렌더링
+
+8) 응답
+
+## 컨트롤러에 비즈니스 로직이 있나?
+
+- 컨트롤러는 조종하는 역할
+- 컨트롤러에 비즈니스 로직까지 있으면 너무 많은 역할이 부여됨
+- 비즈니스 로직이 있는 서비스를 호출하는 역할
+
+# 5. 적용
+
+### 등록폼
+
+MvcMemberFormServlet.java
+
+```java
+package hello.servlet.web.servletmvc;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet(name = "mvcMemberFormServlet", urlPatterns = "/servlet-mvc/members/new-form")
+public class MvcMemberFormServlet extends HttpServlet {
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String viewPath = "/WEB-INF/views/new-form.jsp";
+        //컨트롤러에서 뷰로 이동할 때 사용
+        RequestDispatcher dispathcer = request.getRequestDispatcher(viewPath);
+        //호출하면 서블릿에서 JSP를 호출할 수 있음.
+        dispathcer.forward(request, response);
+    }
+}
+```
+
+new-form.jsp
+
+```java
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- 상대경로 사용, [현재 URL이 속한 계층 경로 + /save] -->
+<!-- action 절대 경로: 'localhost:8080/절대' 경로 이렇게 붙음 -->
+<!-- action 상대 경로: 'localhost:8080/~~/~~/aa->localhost:8080/~~/~~/상대' 경로 이렇게 붙음-->
+<form action="save" method="post">
+    username: <input type="text" name="username" />
+    age: <input type="text" name="age" />
+    <button type="submit">전송</button>
+</form>
+</body>
+</html>
+```
+
+### 저장
+
+MvcMemberSaveServlet.java
+
+```java
+package hello.servlet.web.servletmvc;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+@WebServlet(name="MvcMemberSaveServlet", urlPatterns = "/servlet-mvc/members/save")
+public class MvcMemberSaveServlet extends HttpServlet {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String username = request.getParameter("username");
+        int age = Integer.parseInt(request.getParameter("age"));
+
+        Member member = new Member(username, age);
+        memberRepository.save(member);
+
+        //Model에 데이터를 보관한다.
+        request.setAttribute("member", member);
+
+        //뷰로 던지기
+        String viewPath = "/WEB-INF/views/save-result.jsp";
+        RequestDispatcher dispatcher = request.getRequestDispatcher(viewPath);
+        dispatcher.forward(request, response);
+    }
+}
+
+```
+
+save-result.jsp
+
+```java
+<%@ page import="hello.servlet.domain.member.Member" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+성공
+<ul>
+    <%-- 1번 방식
+    <li>id=<%=((Member)request.getAttribute("member")).getId()%></li>
+    <li>username=<%=((Member)request.getAttribute("member")).getUsername()%></li>
+    <li>age=<%=((Member)request.getAttribute("member")).getAge()%></li>
+    --%>
+    <%-- 2번 방식 : 편하다, 임포트도 필요 없다. --%>
+        <li>id=${member.id}</li>
+        <li>username=${member.username}</li>
+        <li>age=${member.age}</li>
+</ul>
+<a href="/index.html">메인</a>
+</body>
+</html>
+```
+
+### 목록
+
+MvcMemberListServlet.java
+
+```java
+package hello.servlet.web.servletmvc;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+
+@WebServlet(name = "MvcMemberListServlet", urlPatterns = "/servlet-mvc/members")
+public class MvcMemberListServlet extends HttpServlet {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        List<Member> members = memberRepository.findAll();
+
+        request.setAttribute("members", members);
+        String viewPath = "/WEB-INF/views/members.jsp";
+        RequestDispatcher dispatcher = request.getRequestDispatcher(viewPath);
+        dispatcher.forward(request, response);
+    }
+}
+```
+
+member.jsp
+
+```java
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<a href="/index.html">메인</a>
+<table>
+    <thead>
+    <th>id</th>
+    <th>username</th>
+    <th>age</th>
+    </thead>
+    <tbody>
+    <c:forEach var="item" items="${members}">
+        <tr>
+            <td>${item.id}</td>
+            <td>${item.username}</td>
+            <td>${item.age}</td>
+        </tr>
+    </c:forEach>
+    </tbody>
+</table>
+</body>
+</html>
+```
+
+### 절대 경로 vs 상대경로
+
+```
+<form action="save" method="post">
+```
+
+action 절대 경로: 
+
+- 'localhost:8080/절대' 경로 이렇게 붙음
+action 상대 경로:
+- 'localhost:8080/~~/~~/aa → localhost:8080/~~/~~/상대' 경로 이렇게 붙음
+
+### dispatcher.forward()
+
+다른 서블릿이나 JSP로 이동할 수 있는 기능, 서버 내부에서 다시 호출이 발생함.(redirect X)
+
+### WEB-INF
+
+이 경로안에 JSP가 있으면 외부에서 직접 JSP를 호출할 수 없다. 우리가 기대하는 것은 항상 컨트롤러를 통해서 JSP를 호출하는 것이다.
+
+### redirect vs forward
+
+리다이렉트는 실제 클라이언트(웹 브라우저)에 응답이 나갔다가, 클라이언트가 redirect 경로로 다시 요청한다. 따라서 클라이언트가 인지할 수 있고, URL 경로도 실제로 변경된다. 웹브라우저에서 서버로 호출이 2번 일어나는 것
+
+포워드는 서버 내부에서 일어나는 호출이기 때문에 클라이언트가 전혀 인지하지 못한다.
+
+# 6. MVC 패턴 한계
+
+## MVC 컨트롤러 단점
+
+### 포워드 중복
+
+- View로 이동하는 코드가 항상 중복 호출되어야 함.
+- 만약 jsp가 아닌 thymeleaf 같은 다른 뷰로 변경한다면 전체 코드를 다 변경해야함.
+
+### 사용하지 않는 코드
+
+HttpServletRequest, HttpServletResponse는 사용되지 않을 수도 있고, 테스트 케이스를 작성하기도 어렵다.
+
+### 공통 처리가 어렵다.
+
+공통 기능을 메서드로 뽑으면 되지만, 해당 메서드를 항상 호출해야한다.
+
+### 정리
+
+- 컨트롤러 호출 전에 먼저 공통 기능을 처리해야함
+- 프론트 컨트롤러 패턴을 도입하면 이런 문제를 깔끔하게 해결할 수 있음.
+- 입구를 하나로!
