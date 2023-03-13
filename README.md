@@ -203,7 +203,7 @@ Since 2022.12.05
 </details>
 
 <details>
-  <summary>스프링 MVC 2</summary>
+  <summary>스프링 MVC 2편</summary>
   <div markdown="1">
 
   #### 2023-03-13~03-19 주간 목표
